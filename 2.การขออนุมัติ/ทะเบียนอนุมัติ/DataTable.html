@@ -1,0 +1,224 @@
+<script>
+  /*
+   * ✅ FIX #7: ลบ google.script.run.getData() ออกจาก top-level
+   * ❌ เดิม: เรียก getData() ทันทีตอนโหลดหน้า → ก่อน login → error / ข้อมูลไม่แสดง
+   * การเรียก getData() ที่ถูกต้องอยู่ใน:
+   *   - Login.html → loginForm() หลัง login สำเร็จ
+   *   - Login.html → $(document).ready() กรณี session ยังอยู่
+   *   - index.html → p1() กดปุ่มรายการทั้งหมด
+   */
+
+  var table; // DataTable instance (global เพื่อให้ filter ปุ่ม sidebar ใช้ได้)
+
+  function showData(dataArray) {
+    document.getElementById('loading').classList.add('invisible');
+
+    /*
+     * ✅ FIX: อ่าน admin จาก sessionStorage ณ ตอน render
+     * เพราะ DataTable.html โหลดก่อน Login.html ตั้งค่า admin
+     * ถ้าอ่านตอน top-level จะได้ '' เสมอ → ปุ่มแก้ไขซ่อนตลอด
+     */
+    var currentAdmin = '';
+    var stored = sessionStorage.getItem('userName');
+    if (stored) {
+      currentAdmin = stored.split(',')[2] || '';
+    }
+
+    // ถ้า DataTable มีอยู่แล้วให้ destroy ก่อน (กรณีโหลดซ้ำ)
+    if ($.fn.DataTable.isDataTable('#data-table')) {
+      $('#data-table').DataTable().destroy();
+    }
+
+    table = $('#data-table').DataTable({
+      data: dataArray.slice(1), // ตัด header row ออก
+
+      columns: [
+        { title: 'ลำดับ',              width: '5%', className: 'dt-center' },
+        { title: 'ชื่อผู้ครอบครองรถ' },
+        {
+          title: 'สถานะ',
+          render: function (data) {
+            if (data === 'ดำเนินการแล้ว') {
+              return '<span class="text-primary" style="font-size:.75rem">'
+                   + '<i class="fa-solid fa-circle-check"></i> ดำเนินการแล้ว</span>';
+            }
+            return '<span class="text-danger" style="font-size:.75rem">'
+                 + '<i class="fa-solid fa-circle-xmark"></i> รออนุมัติ</span>';
+          }
+        },
+        { title: 'เลขทะเบียนรถ' },
+        { title: 'รายละเอียดรถ'  },
+        { title: 'ประเภทรถ'       },
+        { title: 'คิวบัตร'         },
+        { title: 'วันที่แจ้ง'      },
+        {
+          title: 'ภาพ',
+          render: function (data) {
+            if (!data || data === '') return '-';
+            return '<a href="' + data + '" target="_blank">'
+                 + '<img src="' + data + '" width="35px" loading="lazy" style="border-radius:3px;"></a>';
+          }
+        },
+        {
+          title: 'สถานะอนุมัติ'
+        },
+        {
+          title: 'พิมพ์',
+          data: null,
+          render: function (data, type, row) {
+            if (row[2] !== 'ดำเนินการแล้ว') {
+              return '<span style="color:#d3cfcf" class="btn-xs"><i class="fa-solid fa-print"></i></span>';
+            }
+            return '<button class="btn btn-warning btn-xs" onclick="creatPdf(this);">'
+                 + '<i class="fa-solid fa-print"></i></button>';
+          }
+        },
+        {
+          title: 'แก้ไข',
+          data: null,
+          defaultContent: '<button type="button" class="btn btn-danger btn-xs" onclick="updatestatus(this);">'
+                        + '<i class="fa-solid fa-user-pen"></i></button>'
+        },
+      ],
+
+      columnDefs: [
+        {
+          targets: [9],                          // column สถานะอนุมัติ
+          visible: false                         // ซ่อน column สถานะอนุมัติ (ข้อมูลจาก sheet)
+        },
+        {
+          targets: [11],                         // column แก้ไข
+          visible: true,                         // แสดงสำหรับ user ทุกคน
+          className: 'all'
+        },
+        { targets: [1, 2, 10], className: 'all' }
+      ],
+
+      lengthMenu: [
+        [5, 10, 25, 50, 100, -1],
+        ['5', '10', '25', '50', '100', 'ทั้งหมด']
+      ],
+
+      order:      [[0, 'desc']],
+      processing: true,
+      destroy:    true,
+
+      language: {
+        sProcessing:   'กำลังดำเนินการ...',
+        sLengthMenu:   '_MENU_ ',
+        sZeroRecords:  'ไม่พบข้อมูล',
+        sInfo:         '<i class="fas fa-angle-double-left"></i> _START_ ถึง _END_ จาก _TOTAL_ <i class="fas fa-angle-double-right"></i>',
+        sInfoEmpty:    'แสดง 0 ถึง 0 จาก 0 แถว',
+        sInfoFiltered: '(กรองข้อมูล _MAX_ ทุกแถว)',
+        sInfoPostFix:  '',
+        sSearch:       '<i class="fas fa-search"></i> ค้นหา:',
+        sUrl:          '',
+        oPaginate: {
+          sFirst:    'หน้าแรก',
+          sPrevious: '<i class="fas fa-chevron-left fa-lg"></i>',
+          sNext:     '<i class="fas fa-chevron-right fa-lg"></i>',
+          sLast:     'หน้าสุดท้าย'
+        }
+      },
+
+      initComplete: function () {
+        // ผูก event filter ปุ่ม sidebar หลัง DataTable init
+        $('#table-filter').off('click').on('click', function () {
+          table.columns(2).search(this.value).draw();
+        });
+        $('#table-filter2').off('click').on('click', function () {
+          table.columns(2).search(this.value).draw();
+        });
+      }
+    });
+
+    $.fn.DataTable.ext.pager.numbers_length = 4;
+  }
+
+  /* ===== แก้ไขสถานะ ===== */
+  function updatestatus(el) {
+    var row      = el.closest('tr');
+    var recordId = row.cells[0].innerText.trim();
+    document.getElementById('loading').classList.remove('invisible');
+    document.getElementById('img').style.display = 'none';
+    google.script.run
+      .withSuccessHandler(editForm)
+      .withFailureHandler(showError)
+      .findRecord(parseInt(recordId) || recordId);
+  }
+
+  function editForm(records) {
+    if (!records || records.length === 0) {
+      showError({ message: 'ไม่พบข้อมูล' });
+      return;
+    }
+    document.getElementById('loading').classList.add('invisible');
+    document.getElementById('btnmodal').click();
+    document.getElementById('tb').innerHTML  = '';
+    document.getElementById('tb2').innerHTML = '';
+    document.getElementById('myForm').style.display    = 'block';
+    document.getElementById('numid').value   = records[0][0];
+    document.getElementById('fname').value   = records[0][1];
+    document.getElementById('status').value  = records[0][2];
+    document.getElementById('subject').value = records[0][3];
+    document.getElementById('details').value = records[0][4];
+    document.getElementById('email').value   = records[0][5];
+    document.getElementById('phone').value   = records[0][6];
+    document.getElementById('colstatus').style.display = 'block';
+  }
+
+  /* ===== พิมพ์ ===== */
+  function creatPdf(el) {
+    var row      = el.closest('tr');
+    var recordId = row.cells[0].innerText.trim();
+    document.getElementById('loading').classList.remove('invisible');
+    document.getElementById('tb').innerHTML  = '';
+    document.getElementById('myForm').style.display = 'none';
+    google.script.run
+      .withSuccessHandler(formData)
+      .withFailureHandler(showError)
+      .findRecord(parseInt(recordId) || recordId);
+  }
+
+  function formData(records) {
+    if (!records || records.length === 0) {
+      showError({ message: 'ไม่พบข้อมูล' });
+      return;
+    }
+    document.getElementById('btnmodalprint').click();
+    document.getElementById('loading').classList.add('invisible');
+    document.getElementById('tb2').innerHTML =
+      `<table border="1" style="width:100%">
+        <thead class="bg-success text-white">
+          <tr><th colspan="2"><center><i class="fa-solid fa-circle-user"></i> รายงานแจ้งซ่อม</center></th></tr>
+        </thead>
+        <tbody>
+          <tr><th>ชื่อผู้ครอบครองรถ</th><td>${records[0][1]}</td></tr>
+          <tr><th>เลขทะเบียนรถ</th>     <td>${records[0][3]}</td></tr>
+          <tr><th>รายละเอียดรถ</th>      <td>${records[0][4]}</td></tr>
+          <tr><th>ประเภทรถ</th>          <td>${records[0][5]}</td></tr>
+          <tr><th>คิวบัตร</th>           <td>${records[0][6]}</td></tr>
+          <tr><th>วันที่</th>             <td>${records[0][7]}</td></tr>
+          <tr><th>สถานะ</th>             <td style="color:red">${records[0][2]}</td></tr>
+          <tr><td colspan="2" style="text-align:center">
+            <a href="${records[0][8]}" target="_blank">
+              <img src="${records[0][8]}" width="200" style="border-radius:5px;">
+            </a>
+          </td></tr>
+        </tbody>
+      </table>`;
+  }
+
+  /* ===== Global Error Handler ===== */
+  function showError(err) {
+    document.getElementById('loading').classList.add('invisible');
+    Swal.fire({
+      position: 'top',
+      icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message || 'ไม่ทราบสาเหตุ',
+      showConfirmButton: true
+    });
+  }
+</script>
+<!-- ✅ FIX #8: ไม่ include jQuery/DataTable ที่นี่ → index.html จัดการแล้ว -->

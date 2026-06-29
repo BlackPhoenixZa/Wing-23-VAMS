@@ -1,0 +1,62 @@
+<div class="container">
+  <form id="myForm" onsubmit="submitForm(this)">
+    <div class="col-md-12 mx-auto">
+      <div class="row">
+        <div class="col-md-6 mb-2" style="display:none">
+          <label>ลำดับ</label>
+          <input type="text" class="form-control" id="numid" name="numid">
+        </div>
+        <div class="col-md-6 mb-2">
+          <label>ชื่อ - สกุลของผู้ครอบครองรถ</label>
+          <input type="text" class="form-control" id="fname" name="fname" required>
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label>เลขทะเบียนรถ</label>
+          <input type="text" class="form-control" id="subject" name="subject" required>
+        </div>
+
+        <div class="col-md-12 mb-2">
+          <label>รายละเอียดรถ</label>
+          <input type="text" class="form-control" id="details" name="details" required>
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label>ประเภทรถ</label>
+          <input type="text" class="form-control" id="email" name="email" required>
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label>คิวบัตร</label>
+          <input type="text" class="form-control" id="phone" name="phone" required>
+        </div>
+
+        <div class="col-md-6 mb-2" id="colstatus" style="display:none">
+          <label><i class="fa-solid fa-screwdriver-wrench"></i> สถานะ</label>
+          <select style="color:red" class="form-select" id="status" name="status" required>
+            <option value="รออนุมัติ">รออนุมัติ</option>
+            <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+          </select>
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label style="color:red"><b><i class="fa-regular fa-image"></i> ภาพ</b></label>
+          <input type="file" class="form-control" id="myFile" name="myFile" accept="image/*">
+        </div>
+      </div>
+      <center>
+        <img class="form-control-file p-2" style="max-width: 160px; margin: 0px auto; display: none; border: 0px solid #555;" src="" id="img" alt="form phone">
+      </center>
+
+      <div class="col-md-12 mb-2">
+        <button type="submit" class="btn bg-success text-white w-100" id="add">
+          <i class="fas fa-user-cog"></i> บันทึกข้อมูล
+        </button>
+        <button class="btn bg-success text-white w-100" type="button" id="add2" disabled style="display:none">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          กำลังบันทึก...
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,129 @@
+<script>
+  /*
+   * ✅ FIX #4: ประกาศ admin เป็น var (ต้องเป็น global เพราะ DataTable.html ใช้ด้วย)
+   * ❌ เดิม: admin = dataArray[2] โดยไม่ประกาศ → implicit global → strict mode error
+   */
+  var admin = '';
+
+  $(document).ready(function () {
+    var stored = sessionStorage.getItem('userName');
+    if (stored) {
+      admin = stored.split(',')[2] || '';
+      document.getElementById('admin').innerText = admin;
+      document.getElementById('plogin').style.display  = 'none';
+      document.getElementById('pcontent').style.display = 'block';
+      // ✅ PERF: เรียก getInitData() ครั้งเดียวแทน getData() + getStatus() แยก
+      google.script.run.withSuccessHandler(handleInitData).getInitData();
+    } else {
+      document.getElementById('plogin').style.display  = 'block';
+      document.getElementById('pcontent').style.display = 'none';
+    }
+  });
+
+  /*
+   * ✅ FIX #5: รับ event ผ่าน parameter แทนการใช้ implicit global `event`
+   * ❌ เดิม: function loginForm(obj){ event.preventDefault() }
+   *   → `event` เป็น global ใน browser แต่ไม่ reliable และ error ใน environment อื่น
+   * form ส่ง onsubmit="loginForm(this)" → obj คือ form element
+   * ต้องดัก event ผ่าน window.event หรือใช้ addEventListener แทน
+   * วิธีที่ดีที่สุดคือผูก submit event ผ่าน JS
+   */
+  document.addEventListener('DOMContentLoaded', function () {
+    var frm = document.getElementById('frmLogin');
+    if (frm) {
+      frm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        loginForm(frm);
+      });
+    }
+  });
+
+  function loginForm(formEl) {
+    document.getElementById('btn1').style.display = 'none';
+    document.getElementById('btn2').style.display = 'block';
+
+    // สร้าง plain object ส่งไป Apps Script (ไม่ส่ง DOM element)
+    var obj = {
+      username: formEl.querySelector('[name="username"]').value.trim(),
+      password: formEl.querySelector('[name="password"]').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function (dataArray) {
+        if (dataArray != null) {
+          sessionStorage.setItem('userName', dataArray);
+          admin = (dataArray[2] || '').toString();
+          document.getElementById('admin').innerText = admin;
+          document.getElementById('plogin').style.display  = 'none';
+          document.getElementById('pcontent').style.display = 'block';
+          document.getElementById('btn2').style.display = 'none';
+          document.getElementById('btn1').style.display = 'block';
+          /*
+           * ✅ FIX #6: เดิมเรียก document.getElementById('loginForm').reset()
+           * แต่ id เปลี่ยนเป็น frmLogin แล้ว → ใช้ formEl.reset() แทน
+           */
+          formEl.reset();
+          // ✅ PERF: เรียก getInitData() ครั้งเดียว
+          google.script.run.withSuccessHandler(handleInitData).getInitData();
+        } else {
+          Swal.fire({
+            position: 'top',
+            icon: 'error',
+            title: 'ข้อมูลไม่ถูกต้อง',
+            showConfirmButton: false,
+            timer: 1500
+          });
+          document.getElementById('btn2').style.display = 'none';
+          document.getElementById('btn1').style.display = 'block';
+        }
+      })
+      .withFailureHandler(function (err) {
+        // ✅ FIX: เพิ่ม failure handler กัน error เงียบ
+        Swal.fire({
+          position: 'top',
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด: ' + err.message,
+          showConfirmButton: true
+        });
+        document.getElementById('btn2').style.display = 'none';
+        document.getElementById('btn1').style.display = 'block';
+      })
+      .loginData(obj);
+  }
+
+  function logout() {
+    Swal.fire({
+      title: 'ออกจากระบบ',
+      text: 'คุณต้องการออกจากระบบ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#198754',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ตกลง',
+      cancelButtonText: 'ยกเลิก'
+    }).then(function (result) {
+      if (result.isConfirmed) {
+        admin = '';
+        sessionStorage.removeItem('userName');
+        document.getElementById('plogin').style.display  = 'block';
+        document.getElementById('pcontent').style.display = 'none';
+      }
+    });
+  }
+
+  function password_show_hide() {
+    var x        = document.getElementById('password');
+    var show_eye = document.getElementById('show_eye');
+    var hide_eye = document.getElementById('hide_eye');
+    if (x.type === 'password') {
+      x.type = 'text';
+      show_eye.style.display = 'none';
+      hide_eye.classList.remove('d-none');
+      hide_eye.style.display = 'block';
+    } else {
+      x.type = 'password';
+      show_eye.style.display = 'block';
+      hide_eye.style.display = 'none';
+    }
+  }
+</script>

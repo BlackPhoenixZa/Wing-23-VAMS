@@ -1,0 +1,181 @@
+<script>
+  /*
+   * ✅ FIX: submitForm(obj) → obj ที่รับมาจาก onsubmit="submitForm(this)" คือ form element
+   * แต่โค้ดไม่ได้ใช้ obj เลย → ใช้ document.getElementById แทนทั้งหมด ซึ่งถูกต้องแล้ว
+   * แก้เพิ่มเติม: ป้องกัน double-submit ด้วย flag
+   */
+
+  var _submitting = false; // ป้องกัน double-submit
+
+  function submitForm(formEl) {
+    if (_submitting) return;
+
+    // ✅ ดัก event ผ่าน window.event (ใน Apps Script HtmlService environment)
+    if (window.event) window.event.preventDefault();
+
+    var numid     = document.getElementById('numid').value.trim();
+    var fileInput = document.getElementById('myFile');
+
+    _submitting = true;
+    document.getElementById('add2').style.display = 'block';
+    document.getElementById('add').style.display  = 'none';
+
+    if (numid === '') {
+      // ===== เพิ่มรายการใหม่ (ต้องมีภาพ) =====
+      if (fileInput.files.length > 0) {
+        convertFileToBase64(fileInput.files[0], function (base64Data) {
+          var fd = getFormData();
+          fd.myFile = base64Data;
+          google.script.run
+            .withSuccessHandler(success)
+            .withFailureHandler(onFormError)
+            .addRecord(fd);
+        });
+      } else {
+        Swal.fire({
+          position: 'top', icon: 'error',
+          title: 'กรุณาแนบภาพ!!',
+          showConfirmButton: false, timer: 1500
+        });
+        resetSubmitBtn();
+      }
+
+    } else {
+      // ===== แก้ไขรายการ (ภาพเป็น optional) =====
+      var fd = getFormData();
+      if (fileInput.files.length > 0) {
+        convertFileToBase64(fileInput.files[0], function (base64Data) {
+          fd.myFile = base64Data;
+          google.script.run
+            .withSuccessHandler(success)
+            .withFailureHandler(onFormError)
+            .updateRecord(fd);
+        });
+      } else {
+        fd.myFile = '';
+        google.script.run
+          .withSuccessHandler(success)
+          .withFailureHandler(onFormError)
+          .updateRecord(fd);
+      }
+    }
+  }
+
+  /* สร้าง plain object จาก form (ไม่ส่ง DOM element ไป Apps Script) */
+  function getFormData() {
+    return {
+      numid:   document.getElementById('numid').value.trim(),
+      fname:   document.getElementById('fname').value.trim(),
+      status:  document.getElementById('status').value,
+      subject: document.getElementById('subject').value.trim(),
+      details: document.getElementById('details').value.trim(),
+      email:   document.getElementById('email').value.trim(),
+      phone:   document.getElementById('phone').value.trim(),
+      myFile:  ''
+    };
+  }
+
+  /* แปลงไฟล์ภาพเป็น base64 dataURL */
+  function convertFileToBase64(file, callback) {
+    var reader = new FileReader();
+    reader.onload  = function (e) { callback(e.target.result); };
+    reader.onerror = function ()  { onFormError({ message: 'อ่านไฟล์ไม่ได้' }); };
+    reader.readAsDataURL(file);
+  }
+
+  /* เรียกหลัง submit สำเร็จ */
+  function success(data) {
+    _submitting = false;
+    document.getElementById('myForm').reset();
+    // ✅ PERF: เรียก getInitData() ครั้งเดียวแทน getData() + loadStatus() แยก
+    google.script.run.withSuccessHandler(handleInitData).getInitData();
+
+    Swal.fire({
+      position: 'top', icon: 'success',
+      title: 'บันทึกเรียบร้อย',
+      showConfirmButton: false, timer: 1500
+    });
+
+    document.getElementById('myForm').style.display = 'none';
+    document.getElementById('tb2').innerHTML = '';
+    resetSubmitBtn();
+
+    // แสดงรายละเอียดที่บันทึกไป
+    document.getElementById('tb').innerHTML =
+      `<table border="1" style="width:100%">
+        <thead class="bg-success text-white">
+          <tr><th colspan="2"><center><i class="fa-solid fa-circle-user"></i> รายละเอียด</center></th></tr>
+        </thead>
+        <tr><th>ลำดับ</th>          <td>${data[0]}</td></tr>
+        <tr><th>ชื่อ - สกุล</th>    <td>${data[1]}</td></tr>
+        <tr><th>เลขทะเบียนรถ</th>   <td>${data[3]}</td></tr>
+        <tr><th>รายละเอียดรถ</th>    <td>${data[4]}</td></tr>
+        <tr><th>ประเภทรถ</th>        <td>${data[5]}</td></tr>
+        <tr><th>คิวบัตร</th>         <td>${data[6]}</td></tr>
+        <tr><th>วันที่</th>           <td>${data[7]}</td></tr>
+        <tr><th>สถานะ</th>           <td style="color:blue">${data[2]}</td></tr>
+        <tr><td colspan="2" style="text-align:center">
+          <a href="${data[8]}" target="_blank">
+            <img src="${data[8]}" width="200" style="border-radius:5px;">
+          </a>
+        </td></tr>
+      </table>`;
+  }
+
+  /* เรียกเมื่อ Apps Script คืน error */
+  function onFormError(error) {
+    _submitting = false;
+    console.error('Form error:', error);
+    Swal.fire({
+      position: 'top', icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: error.message || 'ไม่ทราบสาเหตุ',
+      showConfirmButton: true
+    });
+    resetSubmitBtn();
+  }
+
+  /* คืนสถานะปุ่ม submit */
+  function resetSubmitBtn() {
+    document.getElementById('add').style.display  = 'block';
+    document.getElementById('add2').style.display = 'none';
+  }
+
+  /* Preview ภาพก่อน submit */
+  document.addEventListener('DOMContentLoaded', function () {
+    var input = document.querySelector('[name="myFile"]');
+    if (input) {
+      input.addEventListener('change', function () {
+        if (input.files[0] && input.files[0].type.startsWith('image/')) {
+          var img = document.getElementById('img');
+          img.style.display = 'block';
+          img.src = window.URL.createObjectURL(input.files[0]);
+        }
+      });
+    }
+    // ✅ PERF: ไม่เรียก loadStatus() ที่นี่ — Login.html เรียก getInitData() แล้ว
+  });
+
+  /* โหลดสถิติ badge */
+  function loadStatus() {
+    google.script.run
+      .withSuccessHandler(function (data) {
+        if (!data) return;
+        document.getElementById('all').innerText     = data[0] || 0;
+        document.getElementById('success').innerText = data[1] || 0;
+        document.getElementById('wait').innerText    = data[2] || 0;
+      })
+      .getStatus();
+  }
+
+  /* ✅ PERF: handler สำหรับ getInitData() — รับทั้ง table + status ใน call เดียว */
+  function handleInitData(result) {
+    if (!result) return;
+    showData(result.tableData);
+    if (result.statusData) {
+      document.getElementById('all').innerText     = result.statusData[0] || 0;
+      document.getElementById('success').innerText = result.statusData[1] || 0;
+      document.getElementById('wait').innerText    = result.statusData[2] || 0;
+    }
+  }
+</script>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✅ PERF: preconnect ลด DNS/TLS handshake time ก่อนโหลด resource จริง -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- ✅ PERF: Kanit font — display=swap ไม่บล็อก render, โหลด 2 weights ที่ใช้จริง -->
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- CSS Libraries — cdnjs รวม domain เดียว ลด DNS lookup -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+  <!-- ✅ PERF: ย้าย Responsive CSS มาที่ cdnjs เดียวกัน ลด domain เพิ่ม -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive/2.2.9/responsive.dataTables.min.css" rel="stylesheet">
+
+  <title>ระบบทะเบียนข้อมูลอนุมัติบัตรผ่านยานพาหนะ กองบิน 21</title>
+
+  <!-- Custom CSS only (ไม่ include DataTable ใน head เพราะมี script tags) -->
+  <?!= HtmlService.createHtmlOutputFromFile('css').getContent() ?>
+</head>
+
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="d-flex justify-content-center align-items-center invisible">
+    <div class="spinner-border" style="width:3rem;height:3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div class="container" id="plogin">
+    <div class="col-md-6 mx-auto mt-5">
+      <div class="h5 bg-success mb-2 p-2 text-white text-center">
+        <i class="fa-solid fa-user-lock me-2"></i>Login
+      </div>
+      <!--
+        ✅ FIX #1 (BUG หลัก): เปลี่ยน id="loginForm" เป็น id="frmLogin"
+        เดิม: <form id="loginForm"> ทำให้ window['loginForm'] ถูก override
+        ด้วย DOM element → เรียก function loginForm() ไม่ได้เลย!
+      -->
+      <form id="frmLogin" onsubmit="loginForm(this)">
+        <div class="input-group flex-nowrap mb-2">
+          <span class="input-group-text"><i class="fa-solid fa-circle-user"></i></span>
+          <input type="text" class="form-control" name="username"
+                 placeholder="Username" autocomplete="username" required>
+        </div>
+        <div class="input-group flex-nowrap mb-2">
+          <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+          <input type="password" class="form-control" id="password"
+                 name="password" placeholder="Password"
+                 autocomplete="current-password" required>
+          <span class="input-group-text" onclick="password_show_hide();" style="cursor:pointer">
+            <i class="fas fa-eye" id="show_eye"></i>
+            <i class="fas fa-eye-slash d-none" id="hide_eye"></i>
+          </span>
+        </div>
+        <button type="submit" class="btn btn-success w-100" id="btn1">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Login
+        </button>
+        <button class="btn btn-success w-100" type="button" id="btn2" style="display:none" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          กำลังเข้าสู่ระบบ...
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FAB Floating Button -->
+  <div class="fab-container">
+    <div class="fab fab-icon-holder"><i class="fas fa-plus"></i></div>
+    <ul class="fab-options">
+      <li>
+        <span class="fab-label">ติดต่อ</span>
+        <div class="fab-icon-holder">
+          <a target="_blank" href="<?!= credit ?>"><i class="fa-solid fa-address-book"></i></a>
+        </div>
+      </li>
+      <li>
+        <div class="fab-icon-holder">
+          <a target="_blank" href="<?!= youtube ?>"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </li>
+      <li>
+        <div class="fab-icon-holder">
+          <a target="_blank" href="<?!= facebook ?>"><i class="fa-brands fa-facebook"></i></a>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div id="pcontent" style="display:none">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success text-white fixed-top">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand me-auto ms-lg-0 ms-3 text-uppercase fw-bold">
+          <i class="fa-solid fa-book-open-reader"></i>
+          ระบบทะเบียนข้อมูลอนุมัติบัตรผ่านยานพาหนะ กองบิน 21
+        </a>
+        <div class="ms-auto">
+          <button class="btn btn-warning" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span id="admin"></span> Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="offcanvas offcanvas-start sidebar-nav bg-success text-white" tabindex="-1" id="sidebar">
+      <div class="offcanvas-body p-0">
+        <nav class="navbar-dark">
+          <ul class="navbar-nav">
+            <li>
+              <button class="btn btn-success px-3 btn-sm mb-2" onclick="addForm()">
+                <i class="fa-solid fa-caret-right"></i> กรอกทะเบียนขออนุมัติ
+              </button>
+            </li>
+            <li>
+              <button class="btn btn-success px-3 btn-sm mb-2" onclick="p1()">
+                <i class="fa-solid fa-caret-right"></i> รายการทั้งหมด
+                <div class="btn btn-dark position-relative">
+                  <span class="position-absolute top-0 start translate-middle badge rounded-pill bg-primary">
+                    <span id="all"></span>
+                  </span>
+                </div>
+              </button>
+            </li>
+            <li>
+              <button class="btn btn-success px-3 btn-sm mb-1" id="table-filter" value="ดำเนินการแล้ว">
+                <i class="fa-solid fa-caret-right"></i> ดำเนินการแล้ว
+                <div class="btn btn-dark position-relative">
+                  <span class="position-absolute top-0 start translate-middle badge rounded-pill bg-warning text-dark">
+                    <span id="success"></span>
+                  </span>
+                </div>
+              </button>
+            </li>
+            <li>
+              <button class="btn btn-success px-3 btn-sm" id="table-filter2" value="รออนุมัติ">
+                <i class="fa-solid fa-caret-right"></i> รออนุมัติ
+                <div class="btn btn-dark position-relative">
+                  <span class="position-absolute top-0 start translate-middle badge rounded-pill bg-danger">
+                    <span id="wait"></span>
+                  </span>
+                </div>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Table Area -->
+    <main class="mt-5 pt-3">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-md-12">
+            <h5><i class="fa-solid fa-check-to-slot"></i> รายการ</h5>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" id="p1">
+            <div class="card h-100">
+              <div class="card-header bg-success text-white">
+                <i class="fa-solid fa-caret-right"></i> รายการทั้งหมด
+              </div>
+              <div class="card-body">
+                <table id="data-table" class="display responsive nowrap" style="width:100%"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div><!-- /#pcontent -->
+
+  <!-- Hidden Triggers -->
+  <button type="button" id="btnmodal" data-bs-toggle="modal"
+          data-bs-target="#staticBackdrop" style="display:none"></button>
+  <button type="button" id="btnmodalprint" data-bs-toggle="modal"
+          data-bs-target="#modalprint" style="display:none"></button>
+
+  <!-- Modal: กรอก/แก้ไข -->
+  <div class="modal fade" id="staticBackdrop"
+       data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">ทะเบียนขออนุมัติบัตรผ่าน</h5>
+          <button type="button" id="btnclose" class="btn-close"
+                  data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <?!= HtmlService.createHtmlOutputFromFile('form').getContent() ?>
+          <table id="tb" class="table table-bordered table-responsive nowrap" style="width:100%"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: พิมพ์ -->
+  <div class="modal fade" id="modalprint"
+       data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">ทะเบียนขออนุมัติบัตรผ่าน</h5>
+          <button onclick="window.print();" class="btn btn-outline-success btn-sm me-2">
+            <i class="fa-solid fa-print"></i> พิมพ์
+          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body container-fluid print-container">
+          <table id="tb2" class="table table-bordered" style="width:100%"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-muted text-center py-2">
+    <span style="font-size:12px">
+      Credit CYBERWING21 &copy; 2024
+      <a href="<?!= credit ?>" target="_blank">ติดต่อผู้พัฒนา</a>
+    </span>
+  </footer>
+
+  <!--
+    ✅ FIX #2: โหลด JS libraries ครั้งเดียวที่นี่ (ลบออกจาก head และ DataTable.html)
+    ✅ FIX #3: include DataTable, js, Login ไว้ท้าย body เสมอ (หลัง DOM พร้อม)
+  -->
+  <!--
+    ✅ PERF: รวม CDN ให้น้อย domain ที่สุด + defer JS ที่ไม่จำเป็นตอนแรก
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+  <!-- ✅ PERF: ย้าย Responsive JS มาที่ cdnjs เดียวกัน ลดจาก 3 domains เหลือ 2 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive/2.2.9/dataTables.responsive.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+  <!-- ✅ PERF: SweetAlert2 จาก cdnjs แทน jsdelivr — รวมได้ใน 1 domain -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.all.min.js"></script>
+
+  <?!= HtmlService.createHtmlOutputFromFile('DataTable').getContent() ?>
+  <?!= HtmlService.createHtmlOutputFromFile('js').getContent() ?>
+  <?!= HtmlService.createHtmlOutputFromFile('Login').getContent() ?>
+
+  <script>
+    function addForm() {
+      document.getElementById('myForm').reset();
+      document.getElementById('myForm').style.display    = 'block';
+      document.getElementById('colstatus').style.display = 'none';
+      document.getElementById('tb').innerHTML            = '';
+      document.getElementById('tb2').innerHTML           = '';
+      document.getElementById('img').style.display       = 'none';
+      document.getElementById('btnmodal').click();
+    }
+
+    function p1() {
+      document.getElementById('loading').classList.remove('invisible');
+      document.getElementById('p1').style.display = 'block';
+      google.script.run.withSuccessHandler(showData).getData();
+    }
+  </script>
+
+</body>
+</html>

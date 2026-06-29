@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Form</title>
+
+  <?!= HtmlService.createHtmlOutputFromFile('css').getContent() ?>
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <div class="title">
+      ลงทะเบียนทำบัตรผ่านยานพาหนะเข้า - ออกพื้นที่กองบิน 23
+    </div>
+    <form id="myForm" onsubmit="addData(this, event)">
+      <div class="form">
+        <div class="inputfield">
+          <label>ประเภทรถ</label>
+          <div class="custom_select">
+            <select required id="input1" name="input1">
+              <option selected disabled value="">เลือก..</option>
+              <option value="รถยนต์">รถยนต์</option>
+              <option value="รถจักรยานยนต์">รถจักรยานยนต์</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputfield">
+          <label>เลขทะเบียนรถ</label>
+          <input type="text" class="input" id="input2" name="input2" required>
+        </div>
+        <div class="inputfield">
+          <label>ชื่อ สกุล (ผู้ครอบครองรถ)</label>
+          <input type="text" class="input" id="input3" name="input3" required>
+        </div>
+        <div class="inputfield">
+          <label>เบอร์โทรติดต่อ</label>
+          <input type="text" class="input" id="input4" name="input4" maxlength="10" minlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+        </div>
+        <div class="inputfield">
+          <label>ชื่อ สกุล บุคคลที่สามารถติดต่อได้กรณีฉุกเฉิน</label>
+          <input type="text" class="input" id="input5" name="input5" required>
+        </div>
+        <div class="inputfield">
+          <label>เบอร์โทรติดต่อบุคคลที่สามารถติดต่อได้กรณีฉุกเฉิน</label>
+          <input type="text" class="input" id="input6" name="input6" maxlength="10" minlength="10" pattern="\d{10}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+        </div>
+        <div class="inputfield">
+          <label>เลขบัตรประจำตัวประชาชน</label>
+          <input type="text" class="input" id="input7" name="input7" maxlength="13" minlength="13" pattern="\d{13}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+        </div>
+        <div class="inputfield">
+          <label>ประเภทรถ</label>
+          <div class="custom_select">
+            <select required id="input8" name="input8">
+              <option selected disabled value="">เลือก..</option>
+              <option value="รถยนต์นั่งส่วนบุคคลไม่เกิน7คน">รถยนต์นั่งส่วนบุคคลไม่เกิน7คน</option>
+              <option value="รถยนต์นั่งส่วนบุคคลเกิน7คน">รถยนต์นั่งส่วนบุคคลเกิน7คน</option>
+              <option value="รถยนต์บรรทุกส่วนบุคคล">รถยนต์บรรทุกส่วนบุคคล</option>
+              <option value="รถจักรยานยนต์">รถจักรยานยนต์</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputfield">
+          <label>ลักษณะรถ</label>
+          <div class="custom_select">
+            <select required id="input9" name="input9">
+              <option selected disabled value="">เลือก..</option>
+              <option value="เก๋งตอนเดียว">เก๋งตอนเดียว</option>
+              <option value="เก๋งสองตอน">เก๋งสองตอน</option>
+              <option value="เก๋งสองตอนแวน">เก๋งสองตอนแวน</option>
+              <option value="เก๋งสามตอน">เก๋งสามตอน</option>
+              <option value="เก๋งสามตอนแวน">เก๋งสามตอนแวน</option>
+              <option value="นั่งสองตอน">นั่งสองตอน</option>
+              <option value="นั่งสองตอนแวน">นั่งสองตอนแวน</option>
+              <option value="นั่งสามตอน">นั่งสามตอน</option>
+              <option value="นั่งสามตอนแวน">นั่งสามตอนแวน</option>
+              <option value="นั่งสองแถว">นั่งสองแถว</option>
+              <option value="นั่งสองตอนสองแถว">นั่งสองตอนสองแถว</option>
+              <option value="นั่งสองตอนท้ายบรรทุก">นั่งสองตอนท้ายบรรทุก</option>
+              <option value="ประทุนตอนเดียว">ประทุนตอนเดียว</option>
+              <option value="ประทุนสองตอน">ประทุนสองตอน</option>
+              <option value="ตู้นั่งสามตอน">ตู้นั่งสามตอน</option>
+              <option value="ตู้นั่งสี่ตอน">ตู้นั่งสี่ตอน</option>
+              <option value="เก๋งทึบบรรทุก">เก๋งทึบบรรทุก</option>
+              <option value="กระบะบรรทุกพื้นเรียบ">กระบะบรรทุกพื้นเรียบ</option>
+              <option value="กระบะบรรทุก (ไม่มีหลังคา)">กระบะบรรทุก (ไม่มีหลังคา)</option>
+              <option value="กระบะบรรทุก (มีหลังคา)">กระบะบรรทุก (มีหลังคา)</option>
+              <option value="กระบะบรรทุก (เสริมกระบะข้าง)">กระบะบรรทุก (เสริมกระบะข้าง)</option>
+              <option value="กระบะบรรทุก (มีหลังคาฝาปิดด้านข้างและด้านท้าย)">กระบะบรรทุก (มีหลังคาฝาปิดด้านข้างและด้านท้าย)</option>
+              <option value="รถจักรยานยนต์">รถจักรยานยนต์</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputfield">
+          <label>จังหวัด</label>
+          <div class="custom_select">
+            <select required id="input10" name="input10">
+              <option selected disabled value="">เลือก..</option>
+              <option value="กรุงเทพมหานคร">กรุงเทพมหานคร</option>
+              <option value="กระบี่">กระบี่</option>
+              <option value="กาญจนบุรี">กาญจนบุรี</option>
+              <option value="กาฬสินธุ์">กาฬสินธุ์</option>
+              <option value="กำแพงเพชร">กำแพงเพชร</option>
+              <option value="ขอนแก่น">ขอนแก่น</option>
+              <option value="จันทบุรี">จันทบุรี</option>
+              <option value="ฉะเชิงเทรา">ฉะเชิงเทรา</option>
+              <option value="ชลบุรี">ชลบุรี</option>
+              <option value="ชัยนาท">ชัยนาท</option>
+              <option value="ชัยภูมิ">ชัยภูมิ</option>
+              <option value="ชุมพร">ชุมพร</option>
+              <option value="เชียงราย">เชียงราย</option>
+              <option value="เชียงใหม่">เชียงใหม่</option>
+              <option value="ตรัง">ตรัง</option>
+              <option value="ตราด">ตราด</option>
+              <option value="ตาก">ตาก</option>
+              <option value="นครนายก">นครนายก</option>
+              <option value="นครปฐม">นครปฐม</option>
+              <option value="นครพนม">นครพนม</option>
+              <option value="นครราชสีมา">นครราชสีมา</option>
+              <option value="นครศรีธรรมราช">นครศรีธรรมราช</option>
+              <option value="นครสวรรค์">นครสวรรค์</option>
+              <option value="นนทบุรี">นนทบุรี</option>
+              <option value="นราธิวาส">นราธิวาส</option>
+              <option value="น่าน">น่าน</option>
+              <option value="บึงกาฬ">บึงกาฬ</option>
+              <option value="บุรีรัมย์">บุรีรัมย์</option>
+              <option value="ปทุมธานี">ปทุมธานี</option>
+              <option value="ประจวบคีรีขันธ์">ประจวบคีรีขันธ์</option>
+              <option value="ปราจีนบุรี">ปราจีนบุรี</option>
+              <option value="ปัตตานี">ปัตตานี</option>
+              <option value="พระนครศรีอยุธยา">พระนครศรีอยุธยา</option>
+              <option value="พังงา">พังงา</option>
+              <option value="พัทลุง">พัทลุง</option>
+              <option value="พิจิตร">พิจิตร</option>
+              <option value="พิษณุโลก">พิษณุโลก</option>
+              <option value="เพชรบุรี">เพชรบุรี</option>
+              <option value="เพชรบูรณ์">เพชรบูรณ์</option>
+              <option value="แพร่">แพร่</option>
+              <option value="พะเยา">พะเยา</option>
+              <option value="ภูเก็ต">ภูเก็ต</option>
+              <option value="มหาสารคาม">มหาสารคาม</option>
+              <option value="มุกดาหาร">มุกดาหาร</option>
+              <option value="แม่ฮ่องสอน">แม่ฮ่องสอน</option>
+              <option value="ยะลา">ยะลา</option>
+              <option value="ยโสธร">ยโสธร</option>
+              <option value="ร้อยเอ็ด">ร้อยเอ็ด</option>
+              <option value="ระนอง">ระนอง</option>
+              <option value="ระยอง">ระยอง</option>
+              <option value="ราชบุรี">ราชบุรี</option>
+              <option value="ลพบุรี">ลพบุรี</option>
+              <option value="ลำปาง">ลำปาง</option>
+              <option value="ลำพูน">ลำพูน</option>
+              <option value="เลย">เลย</option>
+              <option value="ศรีสะเกษ">ศรีสะเกษ</option>
+              <option value="สกลนคร">สกลนคร</option>
+              <option value="สงขลา">สงขลา</option>
+              <option value="สตูล">สตูล</option>
+              <option value="สมุทรปราการ">สมุทรปราการ</option>
+              <option value="สมุทรสงคราม">สมุทรสงคราม</option>
+              <option value="สมุทรสาคร">สมุทรสาคร</option>
+              <option value="สระแก้ว">สระแก้ว</option>
+              <option value="สระบุรี">สระบุรี</option>
+              <option value="สิงห์บุรี">สิงห์บุรี</option>
+              <option value="สุโขทัย">สุโขทัย</option>
+              <option value="สุพรรณบุรี">สุพรรณบุรี</option>
+              <option value="สุราษฎร์ธานี">สุราษฎร์ธานี</option>
+              <option value="สุรินทร์">สุรินทร์</option>
+              <option value="หนองคาย">หนองคาย</option>
+              <option value="หนองบัวลำภู">หนองบัวลำภู</option>
+              <option value="อ่างทอง">อ่างทอง</option>
+              <option value="อุดรธานี">อุดรธานี</option>
+              <option value="อุทัยธานี">อุทัยธานี</option>
+              <option value="อุตรดิตถ์">อุตรดิตถ์</option>
+              <option value="อุบลราชธานี">อุบลราชธานี</option>
+              <option value="อำนาจเจริญ">อำนาจเจริญ</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputfield">
+          <label>ยี่ห้อรถ</label>
+          <div class="custom_select">
+            <select required id="input11" name="input11">
+              <option selected disabled value="">เลือก..</option>
+              <option value="CADILLAC">CADILLAC</option>
+              <option value="CHEVROLET">CHEVROLET</option>
+              <option value="FORD">FORD</option>
+              <option value="INFINITI">INFINITI</option>
+              <option value="JEEP">JEEP</option>
+              <option value="TESLA">TESLA</option>
+              <option value="ALFA ROMEO">ALFA ROMEO</option>
+              <option value="ASTON MARTIN">ASTON MARTIN</option>
+              <option value="BMW">BMW</option>
+              <option value="FERRARI">FERRARI</option>
+              <option value="FIAT">FIAT</option>
+              <option value="JAGUAR">JAGUAR</option>
+              <option value="LAMBORGHINI">LAMBORGHINI</option>
+              <option value="LAND ROVER">LAND ROVER</option>
+              <option value="MG">MG</option>
+              <option value="MINI">MINI</option>
+              <option value="PEUGEOT">PEUGEOT</option>
+              <option value="RENUALT">RENUALT</option>
+              <option value="SEAT">SEAT</option>
+              <option value="VOLVO">VOLVO</option>
+              <option value="AUDI">AUDI</option>
+              <option value="MERCEDES-BENZ">MERCEDES-BENZ</option>
+              <option value="OPEL">OPEL</option>
+              <option value="VOLKSWAGEN">VOLKSWAGEN</option>
+              <option value="HONDA">HONDA</option>
+              <option value="ISUZU">ISUZU</option>
+              <option value="LEXUS">LEXUS</option>
+              <option value="MAZDA">MAZDA</option>
+              <option value="MITSUBISHI">MITSUBISHI</option>
+              <option value="NISSAN">NISSAN</option>
+              <option value="SUBARU">SUBARU</option>
+              <option value="SUZUKI">SUZUKI</option>
+              <option value="TOYOTA">TOYOTA</option>
+              <option value="DAEWOO">DAEWOO</option>
+              <option value="HYUNDAI">HYUNDAI</option>
+              <option value="KIA">KIA</option>
+              <option value="BYD">BYD</option>
+              <option value="CHERY">CHERY</option>
+              <option value="DEEPAL">DEEPAL</option>
+              <option value="GMW">GMW</option>
+              <option value="HAVAL">HAVAL</option>
+              <option value="NETA">NETA</option>
+              <option value="ORA">ORA</option>
+              <option value="WULING">WULING</option>
+              <option value="XPENG">XPENG</option>
+              <option value="ZEEKR">ZEEKR</option>
+              <option value="YAMAHA">YAMAHA</option>
+              <option value="KAWASAKI">KAWASAKI</option>
+              <option value="HARLEY-DAVIDSON">HARLEY-DAVIDSON</option>
+              <option value="TRIUMPH">TRIUMPH</option>
+              <option value="ROYAL ENFIELD">ROYAL ENFIELD</option>
+              <option value="DUCATI">DUCATI</option>
+              <option value="KTM">KTM</option>
+              <option value="BAJAJ">BAJAJ</option>
+              <option value="VESPA">VESPA</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputfield">
+          <label>แบบรถ</label>
+          <input type="text" class="input" id="input12" name="input12" required>
+        </div>
+        <div class="inputfield">
+          <label>สีรถ</label>
+          <input type="text" class="input" id="input13" name="input13" required>
+        </div>
+        <div class="inputfield">
+          <label>วันที่เสียภาษีรถ</label>
+          <input type="text" class="input" id="input14" name="input14" required>
+        </div>
+        <div class="inputfield">
+          <label>วันครบกำหนดเสียภาษีรถ</label>
+          <input type="text" class="input" id="input15" name="input15" required>
+        </div>
+        <div class="inputfield">
+          <label>ที่อยู่</label>
+          <textarea class="textarea" id="input16" name="input16" required></textarea>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="input17" name="input17" required/>
+          <label class="form-check-label text-secondary" for="input17">
+              ยอมรับเงื่อนไข
+            </label>
+          <button type="button" class="badge rounded-pill bg-danger border-danger" id="btncondition" data-bs-toggle="modal" data-bs-target="#staticBackdrop2" >
+  เงื่อนไขการปฏิบัติ
+</button>
+        </div>
+
+        <div id="output" class="mt-2"></div>
+        <div class="inputfield">
+          <button type="submit" class="btn" id="add"><i class="fas fa-user-cog"></i> ลงทะเบียน</button>
+          <button class="btn" type="submit" id="add2" disabled style="display:none">
+  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" ></span>
+ กำลังบันทึก...
+</button>
+        </div>
+    </form>
+  </div>
+  </div>
+
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-primary" id="modal" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="display:none">
+  buttonmodal
+</button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="staticBackdropLabel">รายละเอียดสมาชิก</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table id="tb" class="table table-bordered table-responsive nowrap" style="width:100%"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <!-- Modal เงื่อนไขการสมัคร-->
+  <div class="modal fade" id="staticBackdrop2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel2" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="staticBackdropLabel2">เงื่อนไขการปฏิบัติ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <p>1. ข้าพเจ้าจะปฏิบัติตาม พ.ร.บ.จราจรทางบก ระเบียบกองทัพอากาศว่าด้วยการจราจรทางบก และระเบียบกองทัพอากาศว่าด้วยการผ่านเข้า-ออก ทุกประการ </p>
+          <p>   - ใช้ความเร็วไม่เกิน 50 กิโลเมตรต่อชั่วโมง </p>
+          <p>   - รถทุกชนิดต้องหยุด เมื่อเห็นป้ายหยุดทุกครั้ง แล้วจึงให้เคลื่อนรถต่อไปได้ด้วยความระมัดระวัง </p>
+          <p>   - สวมหมวกกันน็อคและคาดเข็มขัดนิรภัยให้เรียบร้อยทุกครั้ง เมื่อขับขี่ยานพาหนะในพื้นที่กองบิน 21 </p>
+          <p>   - ห้ามผู้ขับขี่ขับรถขณะใช้โทรศัพท์ ยกเว้นการใช้โทรศัพท์โดยไม่ต้องถือหรือจับ </p>
+          <p>2. หากข้าพเจ้าทำให้ทรัพย์สินของทางราชการเสียหาย ข้าพเจ้าจะชดใช้ค่าเสียหายทันที </p>
+          <p>3. ข้าพเจ้าจะปฏิบัติตามคำแนะนำของ จนท.สห.เกี่ยวกับการจราจร หรือคำแนะนำของ จนท.รปภ.โดยเคร่งครัด </p>
+          <p>4. ข้าพเจ้าจะใช้บัตรยานพาหนะเฉพาะกับรถยนต์, รถจักรยานยนต์ หมายเลขทะเบียนที่ระบุไว้เท่านั้น	</p>
+          <p>5. หากข้าพเจ้าไม่ปฏิบัติตามคำยินยอมข้อใดข้อหนึ่ง ข้าพเจ้ายินยอมให้ยึดบัตรคืนและดำเนินตามกฎหมายทันที </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <?!= HtmlService.createHtmlOutputFromFile('js').getContent() ?>
+</body>
+
+</html>

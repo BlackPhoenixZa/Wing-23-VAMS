@@ -1,0 +1,196 @@
+<!--Js Bootstrap5-->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+
+<!--Js Datatable-->
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+
+<!--Js responsive-->
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<!--Js button-->
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.3.4/js/dataTables.select.min.js"></script>
+<script>
+  
+  google.script.run.withSuccessHandler(showData).getData();
+
+  //Spinner
+  document.getElementById('resp-spinner5').classList.remove("d-none");
+  document.getElementById('resp-spinner6').classList.remove("d-none");
+  document.getElementById('resp-spinner7').classList.remove("d-none");
+
+  function showData(dataArray){
+    $(document).ready(function(){
+     document.getElementById('resp-spinner5').classList.add("d-none");
+     document.getElementById('resp-spinner6').classList.add("d-none");
+     document.getElementById('resp-spinner7').classList.add("d-none");
+ 
+      var t = $('#data-table').DataTable({
+        
+        // ข้อมูล
+        data: dataArray.slice(1),
+      
+      //ซ่อนคอลัมภ์
+      // "columnDefs": [
+      //       {
+      //           "targets": [ 5 ],
+      //           "visible": true,
+      //           "searchable": false,
+      //       }, 
+          
+      //   ],
+      
+        // หัวคอลัมภ์
+        columns: [
+          { title:"ประเภทรถ"},
+          { title:"เลขทะเบียนรถ"},
+          { title:"ชื่อ สกุล"},
+          { title:"เบอร์โทรติดต่อ"},                 
+          { title:"ชื่อ สกุล (บุคคลติดต่อฉุกเฉิน)"}, 
+          { title:"เบอร์โทรบุคคลติดต่อฉุกเฉิน"},
+          { title:"เลขประจำตัวประชาชน"},                 
+          { title:"ประเภทรถ"},
+          { title:"ลักษณะรถ"},   
+          { title:"จังหวัด"},
+          { title:"ยี่ห้อรถ"},
+          { title:"แบบรถ"},
+          { title:"สีรถ"},
+          { title:"วันเสียภาษีรถ"},
+          { title:"วันครบกำหนดเสียภาษีรถ"},
+          { title:"ที่อยู่"},                       
+        //{title:"ลำดับ"},
+        ],
+
+  //ปุ่ม แบบแยกจากกัน      
+  //  dom: 'Bfrtip',
+  //       buttons: [
+  //            {
+  //               text: '<i class="fa-solid fa-home"></i> หน้าหลัก',
+  //               action: function ( e, dt, node, config ) {
+  //                 home();
+  //               }
+  //           },
+             
+  //            {
+  //               text: '<i class="fa-solid fa-user-tie"></i> ติดต่อ',
+  //               action: function ( e, dt, node, config ) {
+  //                  contact();
+  //               }
+  //           },
+
+  //           { extend: "copy", text: '<i class="fa-solid fa-copy"></i> คัดลอก' },
+  //           { extend: "excel", text: '<i class="fa-solid fa-file-excel"></i> Excel' },
+  //           { extend: "print", text: '<i class="fa-solid fa-print"></i> พิมพ์' },
+  //           { extend: "pageLength", text: '<i class="fa-solid fa-eye"></i> แสดงแถว' },
+  //       ],
+
+//ปุ่มแบบ Dropdown
+ dom: 'Bfrtip',
+
+        buttons: [
+                  {
+                text: '<i class="fa-solid fa-home"></i> หน้าหลัก',
+                action: function ( e, dt, node, config ) {
+                  home();
+                }
+   ,split: [ {
+                text: '<i class="fa-solid fa-user-tie"></i> ติดต่อ',
+                action: function ( e, dt, node, config ) {
+                   contact();
+                }
+                }, ],},
+
+             { extend: "excelHtml5", text: '<i class="fa fa-file-excel"></i> Excel'
+   , split: [{ extend: "copy", text: '<i class="far fa-copy"></i> คัดลอก' }, 
+             { extend: "print", text: '<i class="fas fa-print"></i> พิมพ์' }],},
+             { extend: "pageLength", text: '<i class="fas fa-eye"></i> แสดงแถว' },
+             
+        ],   
+
+    //คำสั่ง คลิกเลือกข้อมูล
+        // "initComplete": function () {
+        //     var api = this.api();
+        //     api.$('td').click( function () {
+        //         api.search( this.innerHTML ).draw();
+        //     } );
+        // },
+
+        // กำหนดเมนูแสดงจำนวนแถว
+      lengthMenu: [
+          [5, 10, 25, 50, 100, -1 ],
+          ['5', '10', '25', '50','100', 'ทั้งหมด' ]
+      ],
+
+      // การจัดเรียงลำดับของข้อมูลในคอลัมภ์ asc = น้อยไปหามาก desc = มากไปหาน้อย
+     // order: [[0, "asc"], [0, "asc"], ],
+      responsive: true,
+      ordering: false,
+      //searching: false,
+      //info: false,
+      //paging: false,
+      //select: true,
+
+//ภาษาไทย
+      language: {
+      sProcessing: "กำลังดำเนินการ...",
+      sLengthMenu: "_MENU_ ",
+      sZeroRecords: "ไม่พบข้อมูล",
+      sInfo: '<i class="fas fa-angle-double-left"></i> _START_ ถึง _END_ จาก _TOTAL_ <i class="fas fa-angle-double-right"></i>',
+      sInfoEmpty: "แสดง 0 ถึง 0 จาก 0 แถว",
+      sInfoFiltered: "(กรองข้อมูล _MAX_ ทุกแถว)",
+      sInfoPostFix: "",
+      sSearch: '<i class="fas fa-search" fa-2x></i> ค้นหา:',
+      sUrl: "",
+      oPaginate: {
+        sFirst: "หน้าแรก",
+        sPrevious: '<i class="fas fa-chevron-left fa-lg" ></i>',
+        sNext: '<i class="fas fa-chevron-right fa-lg"></i>',
+        sLast: "หน้าสุดท้าย"
+      }, 
+    },
+
+      });
+
+//ใส่เลขแถวอัตโนมัติ
+//  t.on( 'order.dt search.dt', function () {
+//         t.column(5, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
+//             cell.innerHTML = i+1;
+//         } );
+//     } ).draw();
+    
+    });
+  }
+</script>
+<script>
+
+  //กลับหน้าหลักลิ้งค์เว็บ
+  function home(){
+
+    window.open('https://line.me/ti/p/WfrYfixl5o', '_blank')
+
+  }
+
+   //ปุ่มติดต่อเรา
+  function contact(){
+    Swal.fire({
+                position: 'top',
+                html: '<IFRAME src="https://line.me/ti/p/WfrYfixl5o" width=100%  height=420 frameborder=0 scrolling=auto> </IFRAME>',
+              showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+                              },
+              showConfirmButton: false,
+              showCloseButton: true          
+})
+  }
+</script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>

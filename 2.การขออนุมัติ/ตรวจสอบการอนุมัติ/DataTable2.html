@@ -1,0 +1,69 @@
+
+	<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top"> 
+      <!-- Responsive -->
+   <!-- <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css" rel="stylesheet"
+    type="text/css">  -->
+  </head>
+<body>
+
+    <script>
+ // google.script.run.withSuccessHandler(showData2).getData2();
+
+  function showData2(dataArray){
+    $(document).ready(function(){
+     $.LoadingOverlay("hide");
+      $('#data-table2').DataTable({
+
+        data: dataArray.slice(1),
+      columns: [
+      { title: "ลำดับ" }, 
+      { title: "ชื่อ สกุล" }, 
+      { title: "สถานะ"},
+      { title: "เลขทะเบียนรถ" }, 
+      { title: "รายละเอียดรถ"},
+      { title: "ประเภทรถ"},
+      ],
+      
+      "ordering": false, 
+       destroy:true,     
+       lengthMenu: [
+          [5, 10, 25, 50, 100, -1 ],
+          ['5', '10', '25', '50','100', 'ทั้งหมด' ]
+      ],
+
+      language: {
+      sProcessing: "กำลังดำเนินการ...",
+      sLengthMenu: "แสดง_MENU_แถว",
+      sZeroRecords: "ไม่พบข้อมูล",
+      sInfo: "แสดง _START_ ถึง _END_ จาก _TOTAL_ แถว",
+      sInfoEmpty: "แสดง 0 ถึง 0 จาก 0 แถว",
+      sInfoFiltered: "(กรองข้อมูล _MAX_ ทุกแถว)",
+      sInfoPostFix: "",
+      sSearch: "ค้นหา:",
+      sUrl: "",
+      oPaginate: {
+        sFirst: "หน้าแรก",
+        sPrevious: "ก่อนหน้า",
+        sNext: "ถัดไป",
+        sLast: "หน้าสุดท้าย"
+      }
+      
+    },
+      });
+    });
+  }
+  </script>
+  
+  <!-- <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>  -->
+</body>
+</html>
+
+
+
+
